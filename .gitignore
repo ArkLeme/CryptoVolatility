@@ -1,2 +1,6 @@
 .vscode
 .idea
+
+# Vagrant
+.vagrant
+*.log
