@@ -44,6 +44,62 @@ services:
       hadoop_network:
         ipv4_address: 172.20.0.3
 
+  resourcemanager:
+    build:
+      context: ./resourcemanager
+      dockerfile: Dockerfile
+    image: hadoop-resourcemanager:latest
+    depends_on:
+      - base
+    container_name: resourcemanager
+    hostname: resourcemanager
+    restart: on-failure
+    ports:
+      - 8088:8088
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.4
+
+  nodemanager:
+    build:
+      context: ./nodemanager
+      dockerfile: Dockerfile
+    image: hadoop-nodemanager:latest
+    depends_on:
+      - base
+      - namenode
+      - datanode
+      - resourcemanager
+    container_name: nodemanager
+    hostname: nodemanager
+    restart: on-failure
+    ports:
+      - 8042:8042
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.5
+  
+  historyserver:
+    build:
+      context: ./historyserver
+      dockerfile: Dockerfile
+    image: hadoop-historyserver:latest
+    depends_on:
+      - base
+      - namenode
+      - datanode
+      - resourcemanager
+    container_name: historyserver
+    hostname: historyserver
+    restart: on-failure
+    ports:
+      - 8188:8188
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.6
+
 networks:
   hadoop_network:
     driver: bridge
@@ -56,3 +112,4 @@ networks:
 volumes:
   hadoop_namenode:
   hadoop_datanode:
+  hadoop_historyserver:
