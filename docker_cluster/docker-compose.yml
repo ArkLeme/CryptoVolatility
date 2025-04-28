@@ -100,6 +100,61 @@ services:
       hadoop_network:
         ipv4_address: 172.20.0.6
 
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    hostname: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+      POSTGRES_DB: metastore
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.7
+
+  hivemetastore:
+    build:
+      context: ./hive
+      dockerfile: Dockerfile
+    image: hadoop-hivemetastore:latest
+    container_name: hivemetastore
+    hostname: hivemetastore
+    depends_on:
+      - base
+      - postgres
+    entrypoint: ["/run_metastore.sh"] 
+    restart: on-failure
+    ports:
+      - 9083:9083
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.8
+
+  hiveserver:
+    build:
+      context: ./hive
+      dockerfile: Dockerfile
+    image: hadoop-hiveserver:latest
+    container_name: hiveserver
+    hostname: hiveserver 
+    depends_on:
+      - base
+      - postgres
+      - hivemetastore
+    entrypoint: ["/run_server.sh"]
+    restart: on-failure
+    ports:
+      - 10000:10000
+      - 10002:10002
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.9
+
 networks:
   hadoop_network:
     driver: bridge
@@ -113,3 +168,4 @@ volumes:
   hadoop_namenode:
   hadoop_datanode:
   hadoop_historyserver:
+  postgres_data:
