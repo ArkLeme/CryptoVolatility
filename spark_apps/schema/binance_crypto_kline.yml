@@ -1,0 +1,31 @@
+name: binance_crypto_kline
+db: crypto_binance
+schema:
+  - name: open_time
+    type: string 
+  - name: open_price
+    type: double
+  - name: high_price
+    type: double
+  - name: low_price
+    type: double
+  - name: close_price
+    type: double
+  - name: volume
+    type: double
+  - name: close_time
+    type: string
+  - name: quote_asset_volume
+    type: double
+  - name: number_of_trades
+    type: int
+  - name: taker_buy_base_asset_volume
+    type: double
+  - name: taker_buy_quote_asset_volume
+    type: double
+
+partition_columns:
+  - name: date
+    type: string
+  - name: symbol
+    type: string

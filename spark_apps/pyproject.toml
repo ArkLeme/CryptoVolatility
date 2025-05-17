@@ -1,0 +1,31 @@
+[project]
+name = "crypto_volatility"
+version = "0.1.0"
+description = "Crypto volatility analysis using Binance data"
+requires-python = ">=3.8"
+
+dependencies = [
+    "numpy>=1.24.4",
+    "pandas>=2.0.3",
+    "pyyaml>=6.0.2",
+    "split>=0.4",
+]
+
+[dependency-groups]
+local = [
+    "black>=24.8.0",
+    "pyspark>=3.4.0, <3.5.0",
+    "thrift>=0.22.0",
+    "thrift-sasl>=0.4.3",
+]
+
+[project.optional-dependencies]
+binance = [
+    "python-binance>=1.0.29",
+]
+
+[project.scripts]
+ingest_binance= "bin.ingest_binance:main"
+
+[tool.setuptools.packages.find]
+where = ["crypto_volatility"]

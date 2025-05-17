@@ -1,2 +1,9 @@
 .vscode
 .idea
+
+# Spark apps
+.venv
+build
+*.egg-info
+uv.lock
+__pycache__
