@@ -34,6 +34,14 @@
         <name>hive.metastore.event.db.notification.api.auth</name>
         <value>false</value>
     </property>
+    <property>
+        <name>hive.metastore.try.direct.sql</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.metastorePartitionPruningFallbackOnException</name>
+        <value>true</value>
+    </property>
 
     <!-- Hive Server2 Configuration -->
     <property>

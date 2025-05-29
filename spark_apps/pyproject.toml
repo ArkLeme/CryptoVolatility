@@ -26,6 +26,7 @@ binance = [
 
 [project.scripts]
 ingest_binance= "bin.ingest_binance:main"
+process_volatility = "bin.process_volatility:main"
 
 [tool.setuptools.packages.find]
 where = ["crypto_volatility"]

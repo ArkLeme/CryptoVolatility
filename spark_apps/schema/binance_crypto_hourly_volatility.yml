@@ -1,0 +1,15 @@
+name: binance_crypto_hourly_volatility
+db: crypto_binance
+schema:
+  - name: hour
+    type: string
+  - name: volatility
+    type: double
+  - name: volatility_percent
+    type: double
+
+partition_columns:
+  - name: date
+    type: string
+  - name: symbol
+    type: string 
