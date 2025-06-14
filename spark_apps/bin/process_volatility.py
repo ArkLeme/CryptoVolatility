@@ -1,12 +1,11 @@
 import argparse
-from datetime import datetime, timedelta
-import os
+from datetime import datetime, timedelta, timezone
 from pyspark.sql import DataFrame as pyspark_df
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, hour, log, stddev, lit, concat
 
-from utils.schema_loader import load_schema
-from utils.table_manager import (
+from crypto_volatility.schema_loader import load_schema
+from crypto_volatility.table_manager import (
     database_exists,
     table_exists,
     insert_into_table,
@@ -24,13 +23,20 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--catalog",
+        type=str,
+        default="hive",
+        help="Catalog to use for the Spark session (default: hive)",
+    )
+
+    parser.add_argument(
         "--schema_path", type=str, required=True, help="Path to the schema file"
     )
 
     parser.add_argument(
         "--date",
         type=str,
-        required=True,
+        default=(datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d"),
         help="Date for which to process data (format: YYYY-MM-DD)",
     )
     parser.add_argument(
@@ -82,9 +88,6 @@ def compute_volatility(df: pyspark_df) -> pyspark_df:
 def main():
     args = parse_args()
 
-    if not os.path.exists(args.schema_path):
-        raise FileNotFoundError(f"Schema file not found: {args.schema_path}")
-
     db, table_name, schema, partition_columns = load_schema(args.schema_path)
 
     spark = create_spark_session()
@@ -122,6 +125,7 @@ def main():
         df=df_final,
         table_name=table_name,
         db=db,
+        catalog=args.catalog,
         schema=schema,
         partition_columns=partition_columns,
     )

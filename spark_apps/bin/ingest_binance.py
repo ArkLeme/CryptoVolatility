@@ -1,13 +1,11 @@
 import argparse
-import pandas as pd
-from datetime import datetime
-import os
+from datetime import datetime, timezone, timedelta
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit
 
-from utils.binance import get_klines_by_date
-from utils.schema_loader import load_schema
-from utils.table_manager import insert_into_table
+from crypto_volatility.binance import get_klines_by_date
+from crypto_volatility.schema_loader import load_schema
+from crypto_volatility.table_manager import insert_into_table
 
 
 def create_spark_session() -> SparkSession:
@@ -20,6 +18,13 @@ def parse_args():
 
     parser.add_argument(
         "--schema_path", type=str, required=True, help="Path to the schema file"
+    )
+
+    parser.add_argument(
+        "--catalog",
+        type=str,
+        default="hive",
+        help="Catalog to use for the Spark session (default: hive)",
     )
 
     binance_group = parser.add_argument_group(
@@ -35,17 +40,14 @@ def parse_args():
     binance_group.add_argument(
         "--date",
         type=str,
-        default=datetime.now().strftime("%Y-%m-%d"),
-        help="Date for which to process data (format: YYYY-MM-DD)",
+        default=(datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d"),
+        help="Date for which to process data (format: YYYY-MM-DD) (default: yesterday)",
     )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-
-    if not os.path.exists(args.schema_path):
-        raise FileNotFoundError(f"Schema file not found: {args.schema_path}")
 
     db, table_name, schema, partition_columns = load_schema(args.schema_path)
 
@@ -59,6 +61,7 @@ def main():
             f"No data found for symbol {args.symbol} from {args.start_time} to {args.end_time}."
         )
         return
+    
     spark = create_spark_session()
 
     df = spark.createDataFrame(klines)
@@ -72,6 +75,7 @@ def main():
         df=df,
         table_name=table_name,
         db=db,
+        catalog=args.catalog,
         schema=schema,
         partition_columns=partition_columns,
     )

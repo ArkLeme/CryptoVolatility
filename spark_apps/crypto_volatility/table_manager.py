@@ -30,28 +30,42 @@ def create_table(
     spark: SparkSession,
     table_name: str,
     db: str,
+    catalog: str,
     schema: StructType,
     partition_columns: List[Dict] = None,
     location: str = None,
 ):
-    full_table_name = f"{db}.{table_name}"
 
+    full_table_name = f"{db}.{table_name}"
     partition_columns_str = ", ".join(
         [f"{p['name']} {p['type']}" for p in partition_columns]
     )
-    partition_columns_str = (
-        f"PARTITIONED BY ({partition_columns_str})" if partition_columns else ""
-    )
-    spark.sql(
-        f"""
-        CREATE TABLE IF NOT EXISTS {full_table_name} (
-            {', '.join([f"{field.name} {field.dataType.simpleString()}" for field in schema.fields if field.name not in  [p['name'] for p in partition_columns]])}
+    if catalog == "AwsDataCatalog":
+        spark.sql(
+            f"""
+            CREATE TABLE IF NOT EXISTS {full_table_name} (
+                {', '.join([f"{field.name} {field.dataType.simpleString()}" for field in schema.fields])},
+                {partition_columns_str}
+            )
+            USING iceberg
+            PARTITIONED BY ({', '.join([p['name'] for p in partition_columns])})
+            {f"LOCATION '{location}'" if location else ""}
+            """
         )
-        {partition_columns_str}
-        STORED AS PARQUET
-        {f"LOCATION '{location}'" if location else ""}
-        """
-    )
+    else:
+        partition_columns_str = (
+            f"PARTITIONED BY ({partition_columns_str})" if partition_columns else ""
+        )
+        spark.sql(
+            f"""
+            CREATE TABLE IF NOT EXISTS {full_table_name} (
+                {', '.join([f"{field.name} {field.dataType.simpleString()}" for field in schema.fields if field.name not in  [p['name'] for p in partition_columns]])}
+            )
+            {partition_columns_str}
+            STORED AS PARQUET
+            {f"LOCATION '{location}'" if location else ""}
+            """
+        )
 
     print(f"Table created: {full_table_name}")
 
@@ -61,6 +75,7 @@ def insert_into_table(
     df,
     table_name: str,
     db: str,
+    catalog: str,
     schema: StructType,
     partition_columns: List[Dict] = None,
 ):
@@ -72,6 +87,7 @@ def insert_into_table(
             spark=spark,
             table_name=table_name,
             db=db,
+            catalog=catalog,
             schema=schema,
             partition_columns=partition_columns,
         )

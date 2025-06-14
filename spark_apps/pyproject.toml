@@ -23,10 +23,16 @@ local = [
 binance = [
     "python-binance>=1.0.29",
 ]
+aws = [
+    "boto3>=1.35.10",
+]
 
-[project.scripts]
-ingest_binance= "bin.ingest_binance:main"
-process_volatility = "bin.process_volatility:main"
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+package = true
 
 [tool.setuptools.packages.find]
-where = ["crypto_volatility"]
+where = ["."]

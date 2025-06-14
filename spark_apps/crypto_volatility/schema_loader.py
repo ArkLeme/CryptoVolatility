@@ -1,4 +1,5 @@
 import yaml
+import boto3
 from typing import List, Tuple
 from pyspark.sql.types import (
     DataType,
@@ -31,8 +32,14 @@ def get_data_type(type_str: str) -> DataType:
 
 
 def load_schema(path: str) -> Tuple[str, str, StructType, List[dict]]:
-    with open(path, "r") as f:
-        data = yaml.safe_load(f)
+
+    if path.startswith("s3://"):
+        s3_client = boto3.client("s3")
+        response = s3_client.get_object(Bucket=path.split("/")[2], Key="/".join(path.split("/")[3:]))
+        data = yaml.safe_load(response["Body"])
+    else:
+        with open(path, "r") as f:
+            data = yaml.safe_load(f)
 
     table_name = data["name"]
     db = data["db"]

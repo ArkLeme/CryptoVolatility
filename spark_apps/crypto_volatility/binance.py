@@ -42,9 +42,9 @@ def get_klines(
 
 
 def get_klines_by_date(symbol: str, date: str, interval: str = "1m") -> pd.DataFrame:
-    start_time = datetime.strptime(date, "%Y-%m-%d")
+    start_time = datetime.strptime(date, "%Y-%m-%d").astimezone(timezone.utc)
     start_time = start_time.replace(
-        hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc
+        hour=0, minute=0, second=0, microsecond=0
     )
     end_time = start_time + timedelta(days=1) - timedelta(minutes=1)
 
