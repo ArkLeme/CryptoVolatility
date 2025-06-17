@@ -26,6 +26,9 @@ binance = [
 aws = [
     "boto3>=1.35.10",
 ]
+test = [
+    "pytest>=8.3.5",
+]
 
 [build-system]
 requires = ["setuptools"]

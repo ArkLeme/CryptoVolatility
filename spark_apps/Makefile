@@ -27,4 +27,8 @@ run-volatility:
 		--date $(DATE) \
 		--symbol $(SYMBOL)
 
+test:
+	uv pip install .[test]
+	pytest
+
 .PHONY: run_ingest run-volatility 
