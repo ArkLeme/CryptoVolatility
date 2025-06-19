@@ -25,7 +25,18 @@ kline_columns = {
 def get_klines(
     symbol: str, interval: str, start_time: datetime, end_time: datetime
 ) -> pd.DataFrame:
-    """Fetch klines (candlestick) data from Binance."""
+    """
+    Fetch klines (candlestick) data from Binance.
+
+    Args:
+        symbol (str): Crypto symbol (e.g., 'BTCUSDT').
+        interval (str): Kline interval (e.g., '1m', '5m', '1h').
+        start_time (datetime): Start time for fetching data.
+        end_time (datetime): End time for fetching data.
+
+    Returns:
+        pd.DataFrame: DataFrame containing kline data.
+    """
     start_time = int(start_time.timestamp() * 1000)
     end_time = int(end_time.timestamp() * 1000)
     klines = binance_client.get_klines(
@@ -42,6 +53,17 @@ def get_klines(
 
 
 def get_klines_by_date(symbol: str, date: str, interval: str = "1m") -> pd.DataFrame:
+    """
+    Fetch klines for a specific date from 00:00 to 23:59 UTC.
+
+    Args:
+        symbol (str): Crypto symbol (e.g., 'BTCUSDT').
+        date (str): Date in 'YYYY-MM-DD' format.
+        interval (str): Kline interval (default: '1m').
+
+    Returns:
+        pd.DataFrame: DataFrame containing kline data for the specified date.
+    """
     start_time = datetime.strptime(date, "%Y-%m-%d").astimezone(timezone.utc)
     start_time = start_time.replace(
         hour=0, minute=0, second=0, microsecond=0

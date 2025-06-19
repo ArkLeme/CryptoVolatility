@@ -9,11 +9,18 @@ from crypto_volatility.table_manager import insert_into_table
 
 
 def create_spark_session() -> SparkSession:
+    """
+    Create Spark session
+    """
     builder = SparkSession.builder.appName("CryptoVolatility Ingest Binance")
     return builder.getOrCreate()
 
 
 def parse_args():
+    """
+    Set up command line argument parser
+    """
+
     parser = argparse.ArgumentParser(description="Ingest Binance data")
 
     parser.add_argument(
@@ -51,6 +58,7 @@ def main():
 
     db, table_name, schema, partition_columns = load_schema(args.schema_path)
 
+    # Get binance data for the specified date and symbol
     klines = get_klines_by_date(
         symbol=args.symbol,
         date=args.date,
@@ -64,12 +72,14 @@ def main():
     
     spark = create_spark_session()
 
+    #  Create DataFrame from the klines data and match the schema
     df = spark.createDataFrame(klines)
     df = df.withColumn("date", lit(args.date))
     df = df.withColumn("symbol", lit(args.symbol))
     partition_columns_names = [p["name"] for p in partition_columns]
     df = df.select(schema.fieldNames() + partition_columns_names)
 
+    # Insert the DataFrame into the specified table
     insert_into_table(
         spark=spark,
         df=df,

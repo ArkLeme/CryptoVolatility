@@ -13,11 +13,17 @@ from crypto_volatility.table_manager import (
 
 
 def create_spark_session() -> SparkSession:
+    """
+    Create Spark session
+    """
     builder = SparkSession.builder.appName("CryptoVolatility Processor")
     return builder.getOrCreate()
 
 
 def parse_args():
+    """
+    Set up command line argument parser
+    """
     parser = argparse.ArgumentParser(
         description="Process crypto volatility from Binance data"
     )
@@ -63,6 +69,15 @@ def parse_args():
 
 
 def compute_volatility(df: pyspark_df) -> pyspark_df:
+    """
+    Compute hourly volatility from kline data.
+    
+    Args:
+        df (pyspark_df): DataFrame containing kline data
+
+    Returns:
+        pyspark_df: DataFrame with computed volatility
+    """
 
     first_open_price = df.select("open_price").first()[0]
 
@@ -99,6 +114,7 @@ def main():
             f"Table {args.source_table} does not exist in database {args.source_db}."
         )
 
+    # Load kline data for the specified symbol and date
     df_klines = spark.sql(
         f"""
         SELECT * FROM {args.source_db}.{args.source_table}
@@ -110,6 +126,7 @@ def main():
     if df_klines.isEmpty():
         raise ValueError(f"No data found for symbol {args.symbol} on date {args.date}.")
 
+    # Compute volatility
     df_volatility = compute_volatility(df_klines)
 
     date = datetime.strptime(args.date, "%Y-%m-%d")
@@ -120,6 +137,7 @@ def main():
         schema.fieldNames() + partition_columns_names
     )
 
+    # Insert the DataFrame into the specified table
     insert_into_table(
         spark=spark,
         df=df_final,

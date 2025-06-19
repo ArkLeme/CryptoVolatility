@@ -13,8 +13,16 @@ from pyspark.sql.types import (
     DateType,
 )
 
-
 def get_data_type(type_str: str) -> DataType:
+    """
+    Convert a string representation of a data type to a PySpark DataType.
+
+    Args:
+        type_str (str): string representation of the data type ("string", "int", "double"...).
+
+    Returns:
+        DataType: DataType matching.
+    """
     mapping = {
         "string": StringType(),
         "int": IntegerType(),
@@ -31,6 +39,16 @@ def get_data_type(type_str: str) -> DataType:
 
 
 def load_schema(path: str) -> Tuple[str, str, StructType, List[dict]]:
+    """
+    Load schema from a YAML file or S3 path.
+
+    Args:
+        path (str): Path to the schema file (local or S3).
+        
+    Returns:
+        Tuple[str, str, StructType, List[dict]]: Database name, table name, schema as StructType, and partition columns.
+    """
+
     if path.startswith("s3://"):
         import boto3
         s3_client = boto3.client("s3")

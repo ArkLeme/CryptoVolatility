@@ -7,6 +7,15 @@ def database_exists(
     spark: SparkSession,
     db: str,
 ) -> bool:
+    """
+    Check if a database exists in Spark.
+    
+    Args:
+        spark (SparkSession): Spark session.
+        db (str): Database name.
+    Returns:
+        bool: True if the database exists, False otherwise.
+    """
     return spark.catalog.databaseExists(db)
 
 
@@ -15,6 +24,17 @@ def table_exists(
     table_name: str,
     db: str,
 ) -> bool:
+    """
+    Check if a table exists in a specific database.
+    
+    Args:
+        spark (SparkSession): Spark session.
+        table_name (str): Table name.
+        db (str): Database name.
+
+    Returns:
+        bool: True if the table exists, False otherwise.
+    """
     return spark.catalog.tableExists(f"{db}.{table_name}")
 
 
@@ -22,6 +42,13 @@ def create_database(
     spark: SparkSession,
     db: str,
 ):
+    """
+    Create a database in Spark if it does not exist.
+    
+    Args:
+        spark (SparkSession): Spark session.
+        db (str): Database name.
+    """
     spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
     print(f"Database created: {db}")
 
@@ -35,6 +62,18 @@ def create_table(
     partition_columns: List[Dict] = None,
     location: str = None,
 ):
+    """
+    Create a table in Spark with the specified schema and partitioning.
+    
+    Args:
+        spark (SparkSession): Spark session.
+        table_name (str): Table name.
+        db (str): Database name.
+        catalog (str): Catalog name ( AwsDataCatalog' or 'hive').
+        schema (StructType): Schema of the table.
+        partition_columns (List[Dict], optional): List of partition columns with their names and types.
+        location (str, optional): Location for the table data.
+    """
 
     full_table_name = f"{db}.{table_name}"
     partition_columns_str = ", ".join(
@@ -79,6 +118,19 @@ def insert_into_table(
     schema: StructType,
     partition_columns: List[Dict] = None,
 ):
+    """
+    Insert a DataFrame into a specified table in Spark, creating the database and table if they do not exist.
+
+    Args:
+        spark (SparkSession): Spark session.
+        df: DataFrame to insert.
+        table_name (str): Table name.
+        db (str): Database name.
+        catalog (str): Catalog name (AwsDataCatalog' or 'hive').
+        schema (StructType): Schema of the table.
+        partition_columns (List[Dict], optional): List of partition columns with their names and types.
+    """
+
     if not database_exists(spark, db):
         create_database(spark, db)
 
